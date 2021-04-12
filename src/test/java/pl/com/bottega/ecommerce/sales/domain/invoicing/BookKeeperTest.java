@@ -117,6 +117,15 @@ class BookKeeperTest {
 
         assertEquals(invoice.getItems().size(), 2);
     }
+
+    @Test
+    void shouldCallCalculateTaxZero() {
+        when(factory.create(client)).thenReturn(invoice);
+
+        bookKeeper.issuance(request, taxPolicy);
+
+        Mockito.verify(taxPolicy, times(0)).calculateTax(any(ProductType.class), any(Money.class));
+    }
 }
 
 
