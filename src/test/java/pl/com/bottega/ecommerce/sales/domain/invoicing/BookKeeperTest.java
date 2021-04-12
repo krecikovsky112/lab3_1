@@ -38,6 +38,7 @@ class BookKeeperTest {
 
     private ClientData client;
     private InvoiceRequest request;
+    private Invoice invoice;
 
     @BeforeEach
     void setUp() {
@@ -47,6 +48,7 @@ class BookKeeperTest {
         client = new ClientData(Id.generate(), "Andrzej");
         productData2 = mock(ProductData.class);
         request = new InvoiceRequest(client);
+        invoice = new Invoice(Id.generate(), client);
     }
 
     @Test
@@ -57,7 +59,6 @@ class BookKeeperTest {
         RequestItem item = new RequestItem(productData, 1, new Money(3));
         request.add(item);
 
-        Invoice invoice = new Invoice(Id.generate(), client);
         when(factory.create(client)).thenReturn(invoice);
 
         bookKeeper.issuance(request, taxPolicy);
@@ -76,12 +77,20 @@ class BookKeeperTest {
         RequestItem item2 = new RequestItem(productData2, 3, new Money(5));
         request.add(item2);
 
-        Invoice invoice = new Invoice(Id.generate(), client);
         when(factory.create(client)).thenReturn(invoice);
 
         bookKeeper.issuance(request, taxPolicy);
 
         Mockito.verify(taxPolicy, times(2)).calculateTax(any(ProductType.class), any(Money.class));
+    }
+
+    @Test
+    void shouldReturnInvoiceWithZeroPosition() {
+        when(factory.create(client)).thenReturn(invoice);
+
+        bookKeeper.issuance(request, taxPolicy);
+
+        assertEquals(invoice.getItems().size(), 0);
     }
 }
 
