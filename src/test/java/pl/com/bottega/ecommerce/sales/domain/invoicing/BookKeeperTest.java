@@ -98,7 +98,7 @@ class BookKeeperTest {
     }
 
     @Test
-    void shouldReturnInvoiceWithThreePosition() {
+    void shouldReturnInvoiceWithTwoPosition() {
         when(taxPolicy.calculateTax(any(ProductType.class), any(Money.class))).thenReturn(new Tax(new Money(BigDecimal.ONE), "tax"));
 
         when(productData.getType()).thenReturn(ProductType.STANDARD);
@@ -125,6 +125,29 @@ class BookKeeperTest {
         bookKeeper.issuance(request, taxPolicy);
 
         Mockito.verify(taxPolicy, times(0)).calculateTax(any(ProductType.class), any(Money.class));
+    }
+
+    @Test
+    void shouldCallCalculateTaxThreeTimes() {
+        when(taxPolicy.calculateTax(any(ProductType.class), any(Money.class))).thenReturn(new Tax(new Money(BigDecimal.ONE), "tax"));
+        when(productData.getType()).thenReturn(ProductType.STANDARD);
+        when(productData2.getType()).thenReturn(ProductType.FOOD);
+        when(productData3.getType()).thenReturn(ProductType.DRUG);
+
+        RequestItem item = new RequestItem(productData, 1, new Money(3));
+        request.add(item);
+
+        RequestItem item2 = new RequestItem(productData2, 3, new Money(5));
+        request.add(item2);
+
+        RequestItem item3 = new RequestItem(productData3, 5, new Money(11));
+        request.add(item3);
+
+        when(factory.create(client)).thenReturn(invoice);
+
+        bookKeeper.issuance(request, taxPolicy);
+
+        Mockito.verify(taxPolicy, times(3)).calculateTax(any(ProductType.class), any(Money.class));
     }
 }
 
